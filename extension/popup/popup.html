@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Email Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 420px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #f0f0f0;
+        }
+
+        .container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .header {
+            color: #f0f0f0;
+            text-align: center;
+            padding: 16px;
+            border-bottom: 2px solid #444;
+            background: #000;
+            border-radius: 8px;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            color: #ccc;
+        }
+
+        .status-card {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .status-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .status-footer {
+            font-size: 12px;
+            color: #777;
+            margin-top: 8px;
+        }
+
+        .settings-section {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #f0f0f0;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #ddd;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #555;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid #666;
+        }
+
+        .toggle-switch.active {
+            background: #fff;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+            background: #000;
+        }
+
+        .api-config {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+
+        .api-config label {
+            display: block;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .api-config input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #f0f0f0;
+        }
+
+        .api-config input:focus {
+            outline: none;
+            border-color: #fff;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn {
+            background: #fff;
+            color: #000;
+            border: 2px solid #fff;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #333;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #555;
+            color: #fff;
+            border: 1px solid #666;
+        }
+
+        .btn-secondary:hover {
+            background: #777;
+            box-shadow: none;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.08);
+            border-left: 3px solid #fff;
+            color: #ddd;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            color: #aaa;
+            text-align: center;
+            font-size: 11px;
+            opacity: 0.8;
+            padding-top: 8px;
+        }
+
+        .footer a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #fff;
+        }
+
+        .status-indicator.offline {
+            background: #f44336;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">💀</div>
+            <h1>Phishing Detector</h1>
+            <p>Real-time email threat detection</p>
+        </div>
+
+        <div class="status-card">
+            <div class="status-label">API Connection Status</div>
+            <div id="status-value" class="status-value">
+                <span class="status-indicator" id="status-indicator"></span>
+                <span id="status-text">Checking...</span>
+            </div>
+            <div class="status-footer" id="status-footer">Connecting to backend service...</div>
+        </div>
+
+        <div class="settings-section">
+            <div class="setting-item">
+                <div class="setting-label">Auto-analyze emails</div>
+                <div class="toggle-switch active" id="auto-analyze-toggle"></div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">Show notifications</div>
+                <div class="toggle-switch active" id="notifications-toggle"></div>
+            </div>
+        </div>
+
+        <div class="api-config">
+            <label for="api-endpoint">API Endpoint</label>
+            <input type="text" id="api-endpoint" placeholder="http://localhost:8000/analyze_email" />
+            <button class="btn" id="save-btn">Save Settings</button>
+            <button class="btn btn-secondary" id="test-btn" style="margin-top: 8px; width: 100%;">Test Connection</button>
+        </div>
+
+        <div class="info-box">
+            <strong>📘 How it works:</strong><br>
+            This extension analyzes opened emails in your Gmail inbox for phishing threats. Trust scores indicate email safety (0-100%).
+        </div>
+
+        <div class="footer">
+            <p>Version 1.0.0 | <a href="#" id="open-options">Settings</a></p>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

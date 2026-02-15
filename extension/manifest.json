@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Phishing Email Detector",
+  "version": "1.0.0",
+  "description": "Real-time AI-powered phishing email detection for Gmail with trust score analysis",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "http://localhost:8000/*",
+    "https://*.herokuapp.com/*"
+  ],
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Phishing Email Detector",
+    "default_icon": "images/icon-128.png"
+  },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["scripts/content.js"],
+      "css": ["styles/overlay.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["styles/overlay.css"],
+      "matches": ["https://mail.google.com/*"]
+    }
+  ]
+}

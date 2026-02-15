@@ -1,0 +1,144 @@
+/**
+ * Phishing Detector - Gmail Overlay Styles (Black & White Skull Theme)
+ * Injected CSS for email analysis presentation
+ */
+
+/* Main analysis banner */
+#phishing-detector-banner {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    animation: slideDown 0.3s ease-out;
+    background: #000 !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+}
+
+#phishing-detector-banner strong {
+    color: #fff !important;
+    font-weight: 700;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading state - Black and white with skull */
+#phishing-detector-loading {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    animation: pulse 1.5s infinite;
+    background: #2d2d2d !important;
+    border: 2px solid #555 !important;
+    color: #fff !important;
+}
+
+#phishing-detector-loading::before {
+    content: '💀 ';
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Link risk badges - Black and white style */
+.phishing-badge {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    border: 1px solid #000 !important;
+}
+
+.phishing-badge:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    transform: scale(1.05);
+}
+
+/* Safe indicator (white text on black) */
+.phishing-badge[data-risk="safe"] {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+}
+
+/* Suspicious indicator (yellow/black) */
+.phishing-badge[data-risk="suspicious"] {
+    background-color: #ffcc00 !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+}
+
+/* Risky indicator (dark gray) */
+.phishing-badge[data-risk="risky"] {
+    background-color: #666 !important;
+    color: #fff !important;
+    border: 2px solid #000 !important;
+}
+
+/* Dangerous indicator (black with white text) */
+.phishing-badge[data-risk="dangerous"] {
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff !important;
+}
+
+/* Tooltip style for badges */
+.phishing-badge::before {
+    content: attr(data-tooltip);
+    visibility: hidden;
+    position: absolute;
+    z-index: 10001;
+    background-color: #000;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    border: 1px solid #fff;
+}
+
+.phishing-badge:hover::before {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Error state */
+#phishing-detector-error {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+}
+
+/* Success state */
+#phishing-detector-success {
+    background-color: #d4edda !important;
+    border-color: #c3e6cb !important;
+    color: #155724 !important;
+}
+
+/* Warning state */
+#phishing-detector-warning {
+    background-color: #fff3cd !important;
+    border-color: #ffeeba !important;
+    color: #856404 !important;
+}
