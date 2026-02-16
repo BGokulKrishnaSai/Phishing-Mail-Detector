@@ -1,6 +1,7 @@
 /**
  * Gmail Phishing Detector - Content Script
  * Injects analysis overlay into Gmail emails
+ * REQUIRED: Backend must be connected for analysis
  */
 
 console.log('[PhishingDetector] ========== CONTENT SCRIPT LOADED ==========');
@@ -12,6 +13,10 @@ const CONFIG = {
   CACHE_KEY: 'phishing_analysis_cache'
 };
 
+// Backend connectivity state
+let backendConnected = false;
+let backendCheckDone = false;
+
 // Cache for analyzed emails
 let analysisCache = {};
 
@@ -22,18 +27,149 @@ chrome.storage.local.get([CONFIG.CACHE_KEY], (result) => {
   }
 });
 
-// Add test banner to verify script is loaded
+// Check backend connection on startup
+(async () => {
+  console.log('[PhishingDetector] Checking backend connection on startup...');
+  backendConnected = await checkBackendAvailable();
+  backendCheckDone = true;
+  console.log('[PhishingDetector] Backend connection result:', backendConnected ? 'CONNECTED' : 'NOT CONNECTED');
+})();
+
+// Function to check if backend is available
+async function checkBackendAvailable() {
+  try {
+    const response = await fetch('http://localhost:8000/health', {
+      method: 'GET',
+      timeout: 3000
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('[PhishingDetector] Backend health check failed:', error.message);
+    return false;
+  }
+}
+
+// Add test banner to verify script is loaded - BLOCKED IF NO BACKEND
 window.addEventListener('load', () => {
   console.log('[PhishingDetector] Page fully loaded');
   
-  // Create a test indicator (hidden, just for verification)
-  if (!window.__phishingDetectorLoaded) {
-    window.__phishingDetectorLoaded = true;
-    console.log('[PhishingDetector] Test: Script is active and running on this page');
+  if (window.__phishingDetectorLoaded) {
+    return;
   }
+  
+  window.__phishingDetectorLoaded = true;
+  console.log('[PhishingDetector] Test: Script is active and running on this page');
+  
+  // Wait for backend check to complete
+  const checkInterval = setInterval(() => {
+    if (backendCheckDone) {
+      clearInterval(checkInterval);
+      if (!backendConnected) {
+        console.error('[PhishingDetector] ⛔ BACKEND NOT CONNECTED - Extension disabled');
+        showBlockingMessage();
+      } else {
+        console.log('[PhishingDetector] ✅ Backend is connected - Extension active');
+      }
+    }
+  }, 100);
 });
 
 console.log('[PhishingDetector] Content script initialization in progress...');
+
+/**
+ * Show blocking message if backend is not connected
+ */
+function showBlockingMessage() {
+  const blocker = document.createElement('div');
+  blocker.id = 'phishing-detector-blocker';
+  blocker.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #fff;
+  `;
+  
+  const message = document.createElement('div');
+  message.style.cssText = `
+    background: #1a1a1a;
+    border: 2px solid #ff4444;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 500px;
+    text-align: center;
+  `;
+  
+  message.innerHTML = `
+    <div style="font-size: 48px; margin-bottom: 16px;">⛔</div>
+    <h2 style="color: #ff4444; margin: 16px 0; font-size: 24px;">Phishing Detector - Backend Required</h2>
+    <p style="margin: 16px 0; color: #ccc; font-size: 14px;">
+      The extension requires the backend service to be running.
+    </p>
+    <div style="background: #2a2a2a; padding: 16px; border-radius: 4px; margin: 20px 0; text-align: left; font-family: monospace;">
+      <p style="margin: 8px 0; color: #4CAF50;">To start the backend:</p>
+      <code style="color: #fff;">cd backend</code><br>
+      <code style="color: #fff;">python app.py</code>
+    </div>
+    <p style="margin: 16px 0; color: #888; font-size: 12px;">
+      Extension is disabled until backend is running.
+    </p>
+  `;
+  
+  blocker.appendChild(message);
+  
+  // Show in a way that doesn't break Gmail completely
+  // Instead of blocking entire page, show warning banner
+  blocker.remove();
+  showWarningBanner();
+}
+
+/**
+ * Show warning banner instead of blocking
+ */
+function showWarningBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'phishing-detector-warning';
+  banner.style.cssText = `
+    background-color: #ff4444;
+    color: #fff;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    z-index: 10000;
+    border: 2px solid #fff;
+  `;
+  
+  banner.innerHTML = `
+    <strong>⛔ PHISHING DETECTOR DISABLED</strong><br>
+    Backend service is not running. 
+    Start it with: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">python backend/app.py</code>
+  `;
+  
+  // Try to insert at top
+  const insertPoints = [
+    document.querySelector('[data-message-id]'),
+    document.querySelector('[role="main"]'),
+    document.querySelector('.bAp'),
+    document.body.firstChild
+  ];
+
+  for (const point of insertPoints) {
+    if (point && point.parentNode) {
+      point.parentNode.insertBefore(banner, point);
+      return;
+    }
+  }
+}
 
 /**
  * Extract email data from Gmail's DOM structure
@@ -418,6 +554,13 @@ function getCurrentEmailId() {
 async function analyzeCurrentEmail() {
   try {
     console.log('[PhishingDetector] ===== analyzeCurrentEmail CALLED =====');
+    
+    // REQUIRED: Check if backend is connected
+    if (!backendConnected) {
+      console.error('[PhishingDetector] ⛔ BACKEND NOT CONNECTED - Analysis disabled');
+      console.log('[PhishingDetector] Waiting for user to start backend...');
+      return;
+    }
     
     const emailId = getCurrentEmailId();
     console.log('[PhishingDetector] Current email ID:', emailId);

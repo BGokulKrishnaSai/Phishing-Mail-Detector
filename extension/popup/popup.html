@@ -85,6 +85,21 @@
             margin-top: 8px;
         }
 
+        .status-footer.error {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+        .status-footer code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
         .settings-section {
             background: #2d2d2d;
             border-radius: 8px;
@@ -172,10 +187,30 @@
             color: #f0f0f0;
         }
 
+        .api-config input:disabled {
+            background: #0a0a0a;
+            color: #666;
+            border-color: #333;
+            cursor: not-allowed;
+        }
+
         .api-config input:focus {
             outline: none;
             border-color: #fff;
             box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:disabled {
+            background: #333;
+            color: #666;
+            border-color: #444;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .btn:disabled:hover {
+            background: #333;
+            box-shadow: none;
         }
 
         .btn {
